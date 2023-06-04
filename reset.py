@@ -58,13 +58,14 @@ class Message(Base):
     guild_id = Column(Integer, ForeignKey('guilds.id'))
     guild = relationship("Guild", back_populates="messages")
 
-    def __init__(self, content, user):
+    def __init__(self, content, user, guild):
         if user is None:
             raise ValueError("ユーザー情報がNoneTypeです")
         if user.mute:
             raise ValueError('Cannot add message to muted user')
         self.content = content
         self.user = user
+        self.guild = guild
 
 
 
@@ -81,5 +82,3 @@ for name in data.USER_NAMES:
     user = User(name=name,guild=guild)
     session.add(user)
 session.commit()
-
-# データを取得

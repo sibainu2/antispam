@@ -25,7 +25,7 @@ class Guild(Base):
 
     id = Column(Integer,primary_key=True)
     name = Column(String,nullable=False)
-    users = relationship("User", back_populates="guild")
+    users = relationship("User", back_populates="guild",)
     messages = relationship("Message", back_populates="guild")
 
 
@@ -37,19 +37,25 @@ class User(Base):
     mute = Column(Boolean,default=False)#発言権
     threat = Column(Integer,default=0)#脅威
     messages = relationship("Message", back_populates="user")
+    guild_id = Column(Integer, ForeignKey('guilds.id'))
     guild = relationship("Guild", back_populates="users")
-    def __init__(self, guild):
+    def __init__(self,name ,guild ,mute=False,threat=0):
         if guild is None:
             raise ValueError("サーバー情報がNoneTypeです")
+        self.name = name
+        self.guild = guild
+        self.mute = mute
+        self.threat = threat
 
 class Message(Base):
     __tablename__ = 'messages'
 
     id = Column(Integer, primary_key=True)
-    content = Column(String)
+    content = Column(String,nullable=False)
     time = Column(DateTime, default=datetime.datetime.utcnow)
     user_id = Column(Integer, ForeignKey('users.id'))
     user = relationship("User", back_populates="messages")
+    guild_id = Column(Integer, ForeignKey('guilds.id'))
     guild = relationship("Guild", back_populates="messages")
 
     def __init__(self, content, user):
@@ -71,10 +77,8 @@ guild = Guild(name="test")
 session.add(guild)
 session.commit()
 
-guild = session.query(Guild).filter(Guild.id==0)
-
 for name in data.USER_NAMES:
-    user = User(name=name, mute=False, threat=0,guild=guild)
+    user = User(name=name,guild=guild)
     session.add(user)
 session.commit()
 
